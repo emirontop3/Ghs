@@ -1,22 +1,30 @@
-let store = { status: "Sistem Hazır", lastUpdate: "Bekleniyor", values: {} };
+let store = { 
+    status: "Sistem Hazır", 
+    values: {}, 
+    ssRequested: false // SS isteği bayrağı
+};
 
 module.exports = (req, res) => {
-    // CORS Ayarları
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+    if (req.method === 'OPTIONS') return res.status(200).end();
+
+    // Web sitesinden gelen SS isteği
+    if (req.method === 'GET' && req.query.action === 'requestSS') {
+        store.ssRequested = true;
+        return res.status(200).json({ message: "SS İsteği Gönderildi" });
     }
 
     if (req.method === 'POST') {
-        store = {
-            status: "Veri Alindi",
-            lastUpdate: new Date().toLocaleTimeString('tr-TR'),
-            values: req.body
-        };
-        return res.status(200).json({ success: true });
+        store.values = req.body;
+        store.lastUpdate = new Date().toLocaleTimeString('tr-TR');
+        
+        // Roblox veriyi gönderince isteği sıfırla ve Roblox'a cevap dön
+        let response = { ssNeeded: store.ssRequested };
+        store.ssRequested = false; 
+        return res.status(200).json(response);
     }
 
     return res.status(200).json(store);
