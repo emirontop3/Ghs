@@ -1,11 +1,7 @@
 {
   "version": 2,
-  "public": true,
   "rewrites": [
     { "source": "/", "destination": "/public/index.html" },
     { "source": "/api/(.*)", "destination": "/api/$1" }
-  ],
-  "engines": {
-    "node": "24.x"
-  }
+  ]
 }
