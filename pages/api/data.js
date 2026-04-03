@@ -1,8 +1,12 @@
-// api/data.js
-let storage = { 
-    status: "Sistem Aktif", 
+// Sunucu belleğinde veriyi tutmak için (Site uykuya dalana kadar kalır)
+let currentData = { 
+    status: "Sistem Hazır", 
     lastUpdate: "Veri bekleniyor...", 
-    values: {} 
+    values: {
+        elmas: 0,
+        coin: "0",
+        guc: "0"
+    } 
 };
 
 export default function handler(req, res) {
@@ -11,19 +15,21 @@ export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+    // Ön kontrol (Preflight) isteği
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
     if (req.method === 'POST') {
-        storage = {
-            status: "Veri Alındı",
+        // Roblox'tan gelen veriyi kaydet
+        currentData = {
+            status: "Canlı Veri Akışı",
             lastUpdate: new Date().toLocaleTimeString('tr-TR'),
             values: req.body
         };
         return res.status(200).json({ success: true });
     }
 
-    // GET isteğinde mevcut veriyi göster
-    return res.status(200).json(storage);
+    // Siteye girildiğinde (GET) veriyi JSON olarak göster
+    return res.status(200).json(currentData);
 }
