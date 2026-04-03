@@ -1,29 +1,32 @@
 import { useEffect, useState } from 'react';
 
-export default function Home() {
+export default function Dashboard() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const getData = async () => {
       const res = await fetch('/api/data');
       const json = await res.json();
       setData(json);
     };
-
-    fetchData();
-    const interval = setInterval(fetchData, 5000); // 5 saniyede bir sayfayı yeniler
-    return () => clearInterval(interval);
+    getData();
+    const timer = setInterval(getData, 5000); 
+    return () => clearInterval(timer);
   }, []);
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'monospace', backgroundColor: '#111', color: '#0f0' }}>
-      <h1>Roblox Veri Paneli</h1>
-      <hr />
-      <p><strong>Durum:</strong> {data?.status}</p>
-      <p><strong>Son Güncelleme:</strong> {data?.lastUpdate}</p>
-      <pre style={{ background: '#222', padding: '10px' }}>
-        {JSON.stringify(data?.payload, null, 2)}
-      </pre>
+    <div style={{ backgroundColor: '#0a0a0a', color: '#00ff00', minHeight: '100vh', padding: '40px', fontFamily: 'Courier New' }}>
+      <h1 style={{ borderBottom: '2px solid #00ff00' }}>ELITE MONITORING SYSTEM</h1>
+      <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #333' }}>
+        <p><strong>DURUM:</strong> {data?.status}</p>
+        <p><strong>SON GÜNCELLEME:</strong> {data?.updatedAt}</p>
+      </div>
+      <div style={{ marginTop: '20px' }}>
+        <h3>GELEN VERİLER:</h3>
+        <pre style={{ background: '#1a1a1a', padding: '20px', borderRadius: '5px', overflowX: 'auto' }}>
+          {JSON.stringify(data?.stats, null, 4)}
+        </pre>
+      </div>
     </div>
   );
 }
