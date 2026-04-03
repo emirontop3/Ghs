@@ -2,42 +2,172 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Elite Data Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Data Monitor | Dashboard</title>
     <style>
-        body { background: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; }
-        .box { border: 1px solid #00ff00; padding: 15px; margin-bottom: 10px; background: #111; }
-        h1 { border-bottom: 2px solid #00ff00; padding-bottom: 10px; }
-        .value { color: #fff; font-weight: bold; }
+        * { box-sizing: border-box; }
+        body { 
+            background: #0a0a0a; 
+            color: #00ff00; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px;
+        }
+        .container { width: 100%; max-width: 600px; }
+        h1 { 
+            text-align: center; 
+            border-bottom: 2px solid #00ff00; 
+            padding-bottom: 10px; 
+            text-shadow: 0 0 10px #00ff00;
+        }
+        .box { 
+            background: #111; 
+            border: 1px solid #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .stat-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px 0; 
+            border-bottom: 1px solid #222;
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .label { color: #888; font-weight: bold; }
+        .value { color: #fff; font-family: 'Courier New', monospace; }
+        
+        #ssBtn {
+            width: 100%;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        #ssBtn:hover { background: #00cc00; box-shadow: 0 0 15px #00ff00; }
+        #ssBtn:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; }
+        
+        #ssStatus { text-align: center; margin-top: 10px; font-size: 14px; min-height: 20px; }
+        .pulse { animation: pulse-animation 2s infinite; }
+        @keyframes pulse-animation {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
-    <h1>ELITE MONITORING SYSTEM</h1>
-    <div id="status" class="box">Durum: Veri bekleniyor...</div>
-    <div class="box">
-        <p>Oyuncu: <span id="oyuncu" class="value">-</span></p>
-        <p>Elmas: <span id="elmas" class="value">0</span></p>
-        <p>Coin: <span id="coin" class="value">0</span></p>
-        <p>Güç: <span id="guc" class="value">0</span></p>
-    </div>
-    <p>Son Güncelleme: <span id="time">-</span></p>
 
-    <script>
-        async function updateData() {
-            try {
-                const res = await fetch('/api/data');
-                const data = await res.json();
-                if(data.values) {
-                    document.getElementById('status').innerText = "Durum: " + data.status;
-                    document.getElementById('oyuncu').innerText = data.values.oyuncu || "-";
-                    document.getElementById('elmas').innerText = data.values.elmas || "0";
-                    document.getElementById('coin').innerText = data.values.coin || "0";
-                    document.getElementById('guc').innerText = data.values.guc || "0";
-                    document.getElementById('time').innerText = data.lastUpdate || "-";
-                }
-            } catch (e) { console.error("Veri çekilemedi"); }
+<div class="container">
+    <h1>ELITE MONITOR v3</h1>
+    
+    <div class="box">
+        <div class="stat-row">
+            <span class="label">DURUM:</span>
+            <span id="status" class="value pulse">Bağlantı Bekleniyor...</span>
+        </div>
+        <div class="stat-row">
+            <span class="label">SON GÜNCELLEME:</span>
+            <span id="time" class="value">-</span>
+        </div>
+    </div>
+
+    <div class="box">
+        <div class="stat-row">
+            <span class="label">OYUNCU:</span>
+            <span id="oyuncu" class="value">---</span>
+        </div>
+        <div class="stat-row">
+            <span class="label">ELMAS:</span>
+            <span id="elmas" class="value">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="label">COIN:</span>
+            <span id="coin" class="value">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="label">GÜÇ:</span>
+            <span id="guc" class="value">0</span>
+        </div>
+    </div>
+
+    <div class="box">
+        <button id="ssBtn" onclick="requestSS()">📸 OYUNDAN VERİ/SS İSTE</button>
+        <div id="ssStatus"></div>
+    </div>
+</div>
+
+<script>
+    // Verileri API'den çekip ekrana basan fonksiyon
+    async function updateData() {
+        try {
+            const res = await fetch('/api/data');
+            const data = await res.json();
+            
+            if (data.values && data.values.oyuncu) {
+                document.getElementById('status').innerText = "AKTİF";
+                document.getElementById('status').style.color = "#00ff00";
+                document.getElementById('oyuncu').innerText = data.values.oyuncu;
+                document.getElementById('elmas').innerText = data.values.elmas;
+                document.getElementById('coin').innerText = data.values.coin;
+                document.getElementById('guc').innerText = data.values.guc;
+                document.getElementById('time').innerText = data.lastUpdate || "-";
+            }
+        } catch (e) {
+            console.error("Veri senkronizasyon hatası.");
         }
-        setInterval(updateData, 5000); // 5 saniyede bir ekranı tazele
-        updateData();
-    </script>
+    }
+
+    // SS İsteği Gönderen Fonksiyon
+    async function requestSS() {
+        const btn = document.getElementById('ssBtn');
+        const statusText = document.getElementById('ssStatus');
+        
+        try {
+            btn.disabled = true;
+            statusText.innerText = "İstek iletiliyor...";
+            statusText.style.color = "#ffff00";
+
+            // API'ye GET isteği atarak ssRequested bayrağını true yapıyoruz
+            await fetch('/api/data?action=requestSS');
+            
+            statusText.innerText = "İstek başarılı! Roblox'tan cevap bekleniyor (10s Cooldown)";
+            statusText.style.color = "#00ff00";
+
+            // 10 Saniyelik Cooldown
+            let timeLeft = 10;
+            const timer = setInterval(() => {
+                timeLeft--;
+                btn.innerText = `BEKLEYİN (${timeLeft}s)`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.innerText = "📸 OYUNDAN VERİ/SS İSTE";
+                    statusText.innerText = "";
+                }
+            }, 10000);
+
+        } catch (err) {
+            statusText.innerText = "İstek başarısız oldu!";
+            statusText.style.color = "#ff0000";
+            btn.disabled = false;
+        }
+    }
+
+    // Her 5 saniyede bir ekranı tazele
+    setInterval(updateData, 5000);
+    updateData(); // İlk açılışta çalıştır
+</script>
+
 </body>
 </html>
