@@ -1,29 +1,25 @@
-let currentData = {
-    status: "Veri bekleniyor...",
-    updatedAt: "-",
-    stats: {}
-};
+let currentData = { status: "Bekleniyor", values: {} };
 
 export default function handler(req, res) {
-    // CORS ayarları (Roblox'tan gelen isteklere izin vermek için)
+    // CORS Ayarları (Roblox'un erişebilmesi için şart)
+    res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
     if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+        res.status(200).end();
+        return;
     }
 
     if (req.method === 'POST') {
-        // Roblox'tan gelen veriyi kaydet
         currentData = {
-            status: "Aktif",
-            updatedAt: new Date().toLocaleString('tr-TR'),
-            stats: req.body
+            updatedAt: new Date().toLocaleTimeString('tr-TR'),
+            values: req.body
         };
         return res.status(200).json({ success: true });
-    } else {
-        // Siteye girildiğinde veriyi göster
-        return res.status(200).json(currentData);
-    }
+    } 
+
+    // GET isteğinde veriyi döndür
+    res.status(200).json(currentData);
 }
