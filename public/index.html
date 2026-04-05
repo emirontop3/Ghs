@@ -24,25 +24,13 @@
     <p>(Evet bu isim için çok düşündüm)</p>
 
     <script>
-        // Büyük sayıları kısaltan fonksiyon
-        function formatNumber(num) {
+        // Sadece Elmas (Gem) için kullanılacak formatlayıcı
+        function formatGem(num) {
             if (!num || isNaN(num)) return "0";
-            
-            const suffixes = [
-                { value: 1e24, symbol: "Y" },  // Yocto
-                { value: 1e21, symbol: "Sx" }, // Sextillion
-                { value: 1e18, symbol: "Qi" }, // Quintillion
-                { value: 1e15, symbol: "Qd" }, // Quadrillion
-                { value: 1e12, symbol: "T" },  // Trillion
-                { value: 1e9, symbol: "B" },   // Billion
-                { value: 1e6, symbol: "M" },   // Million
-                { value: 1e3, symbol: "K" }    // Thousand
-            ];
+            const n = parseFloat(num);
+            if (n < 1000) return n;
 
-            // Septilyon (Sp) özel isteğin için ekleme
-            // Genelde 1e24 septilyondur ancak oyunlarda sıralama değişebilir.
-            // Buraya istediğin sembolü (Sp, Sx) ekleyebilirsin:
-            const customSuffixes = [
+            const suffixes = [
                 { value: 1e24, symbol: "Sp" },
                 { value: 1e21, symbol: "Sx" },
                 { value: 1e18, symbol: "Qi" },
@@ -53,12 +41,12 @@
                 { value: 1e3, symbol: "K" }
             ];
 
-            for (let i = 0; i < customSuffixes.length; i++) {
-                if (num >= customSuffixes[i].value) {
-                    return (num / customSuffixes[i].value).toFixed(2).replace(/\.00$/, '') + customSuffixes[i].symbol;
+            for (let i = 0; i < suffixes.length; i++) {
+                if (n >= suffixes[i].value) {
+                    return (n / suffixes[i].value).toFixed(2) + suffixes[i].symbol;
                 }
             }
-            return num.toString();
+            return n;
         }
 
         async function updateData() {
@@ -69,16 +57,17 @@
                     document.getElementById('status').innerText = "Durum: " + data.status;
                     document.getElementById('oyuncu').innerText = data.values.oyuncu || "-";
                     
-                    // Verileri formatlayarak yazdırıyoruz
-                    document.getElementById('elmas').innerText = formatNumber(data.values.elmas);
-                    document.getElementById('coin').innerText = formatNumber(data.values.coin);
-                    document.getElementById('guc').innerText = formatNumber(data.values.guc);
+                    // SADECE ELMAS FORMATLANIYOR
+                    document.getElementById('elmas').innerText = formatGem(data.values.elmas);
+                    
+                    // COIN VE GÜÇ OLDUĞU GİBİ KALIYOR
+                    document.getElementById('coin').innerText = data.values.coin || "0";
+                    document.getElementById('guc').innerText = data.values.guc || "0";
                     
                     document.getElementById('time').innerText = data.lastUpdate || "-";
                 }
             } catch (e) { 
                 console.error("Veri çekilemedi"); 
-                document.getElementById('status').innerText = "Durum: Bağlantı Hatası";
             }
         }
 
