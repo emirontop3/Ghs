@@ -1,7 +1,8 @@
 let store = { 
     status: "Sistem Hazır", 
     values: {}, 
-    ssRequested: false // SS isteği bayrağı
+    pets: [], // Pet listesi için yeni alan
+    ssRequested: false 
 };
 
 module.exports = (req, res) => {
@@ -11,17 +12,20 @@ module.exports = (req, res) => {
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    // Web sitesinden gelen SS isteği
     if (req.method === 'GET' && req.query.action === 'requestSS') {
         store.ssRequested = true;
         return res.status(200).json({ message: "SS İsteği Gönderildi" });
     }
 
     if (req.method === 'POST') {
+        // Gelen veride pets varsa onu ayır, geri kalanı values'a at
+        if (req.body.pets) {
+            store.pets = req.body.pets;
+            delete req.body.pets;
+        }
         store.values = req.body;
         store.lastUpdate = new Date().toLocaleTimeString('tr-TR');
         
-        // Roblox veriyi gönderince isteği sıfırla ve Roblox'a cevap dön
         let response = { ssNeeded: store.ssRequested };
         store.ssRequested = false; 
         return res.status(200).json(response);
