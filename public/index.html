@@ -22,7 +22,45 @@
     </div>
     <p>Son Güncelleme: <span id="time">-</span></p>
     <p>(Evet bu isim için çok düşündüm)</p>
+
     <script>
+        // Büyük sayıları kısaltan fonksiyon
+        function formatNumber(num) {
+            if (!num || isNaN(num)) return "0";
+            
+            const suffixes = [
+                { value: 1e24, symbol: "Y" },  // Yocto
+                { value: 1e21, symbol: "Sx" }, // Sextillion
+                { value: 1e18, symbol: "Qi" }, // Quintillion
+                { value: 1e15, symbol: "Qd" }, // Quadrillion
+                { value: 1e12, symbol: "T" },  // Trillion
+                { value: 1e9, symbol: "B" },   // Billion
+                { value: 1e6, symbol: "M" },   // Million
+                { value: 1e3, symbol: "K" }    // Thousand
+            ];
+
+            // Septilyon (Sp) özel isteğin için ekleme
+            // Genelde 1e24 septilyondur ancak oyunlarda sıralama değişebilir.
+            // Buraya istediğin sembolü (Sp, Sx) ekleyebilirsin:
+            const customSuffixes = [
+                { value: 1e24, symbol: "Sp" },
+                { value: 1e21, symbol: "Sx" },
+                { value: 1e18, symbol: "Qi" },
+                { value: 1e15, symbol: "Qa" },
+                { value: 1e12, symbol: "T" },
+                { value: 1e9, symbol: "B" },
+                { value: 1e6, symbol: "M" },
+                { value: 1e3, symbol: "K" }
+            ];
+
+            for (let i = 0; i < customSuffixes.length; i++) {
+                if (num >= customSuffixes[i].value) {
+                    return (num / customSuffixes[i].value).toFixed(2).replace(/\.00$/, '') + customSuffixes[i].symbol;
+                }
+            }
+            return num.toString();
+        }
+
         async function updateData() {
             try {
                 const res = await fetch('/api/data');
@@ -30,14 +68,21 @@
                 if(data.values) {
                     document.getElementById('status').innerText = "Durum: " + data.status;
                     document.getElementById('oyuncu').innerText = data.values.oyuncu || "-";
-                    document.getElementById('elmas').innerText = data.values.elmas || "0";
-                    document.getElementById('coin').innerText = data.values.coin || "0";
-                    document.getElementById('guc').innerText = data.values.guc || "0";
+                    
+                    // Verileri formatlayarak yazdırıyoruz
+                    document.getElementById('elmas').innerText = formatNumber(data.values.elmas);
+                    document.getElementById('coin').innerText = formatNumber(data.values.coin);
+                    document.getElementById('guc').innerText = formatNumber(data.values.guc);
+                    
                     document.getElementById('time').innerText = data.lastUpdate || "-";
                 }
-            } catch (e) { console.error("Veri çekilemedi"); }
+            } catch (e) { 
+                console.error("Veri çekilemedi"); 
+                document.getElementById('status').innerText = "Durum: Bağlantı Hatası";
+            }
         }
-        setInterval(updateData, 5000); // 5 saniyede bir ekranı tazele
+
+        setInterval(updateData, 5000);
         updateData();
     </script>
 </body>
